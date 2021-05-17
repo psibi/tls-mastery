@@ -1,0 +1,145 @@
+* Introduction
+
+- TLS encrypts a network connection during transit. That's it.
+
+* TLS, SSL and Versions
+
+- A digital certificate is a collection of carefully formatted
+  information that identifies an entity, digitally signed ay a
+  certificat authority.
+- A certificate signed by itself is called a self signed certificate.
+- Secure Socket Layer or SSL was an early transport layer security
+  protocol. Netscape created the primordial SSL in 1994 and let people
+  test it. The earlier version had flaws. So Netscape released version
+  2 in 1995 and version 3 in 1996.
+- The IEFT released version 1 of Transport layer security or TLS
+  in 1999. It's a direct descendant of SSL version 3. The name was
+  changed for political reasons.
+- TLS 1.1 escaped in 2006, 1.2 in 2008 and 1.3 in 2018.
+- As of 2020, all Internete sites sould prefer TLS version 1.3 falling
+  back to 1.2 only if necessary.
+
+* Why TLS?
+
+- TLS is a generic protocol for wrapping individual TCP/IP
+  connections. Where solutions like IPSec can taunnel and encrypt all
+  traffic between two IP addresses, TLS encrypts only a single
+  connection.
+- TLS can be added to existing protocols comparatively simply.
+
+* Using openssl
+
+- Can create keypairs, digitally sign files, parse ASN.1 and X.509,
+  generated randomish numbers and verify TLS certificates.
+- Openssl command format:
+
+#+begin_example
+openssl subcommand flags
+#+end_example
+
+- *genrsa* subcommand creates RSA keys.
+- *x509* subcommand copes with X.509 certificates.
+
+Common flags:
+
+- *-in* flags for input
+- *-out* flags for output
+- *-text* textual format
+
+#+begin_src sh
+openssl version
+#+end_src
+
+#+RESULTS:
+: OpenSSL 1.1.1  11 Sep 2018
+
+#+begin_src sh :results verbatim
+openssl version -a
+#+end_src
+
+#+RESULTS:
+: OpenSSL 1.1.1  11 Sep 2018
+: built on: Mon Mar 22 11:42:42 2021 UTC
+: platform: debian-amd64
+: options:  bn(64,64) rc4(16x,int) des(int) blowfish(ptr)
+: compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -Wa,--noexecstack -g -O2 -fdebug-prefix-map=/build/openssl-nwsL4a/openssl-1.1.1=. -fstack-protector-strong -Wformat -Werror=format-security -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_CPUID_OBJ -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DOPENSSL_BN_ASM_MONT5 -DOPENSSL_BN_ASM_GF2m -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DKECCAK1600_ASM -DRC4_ASM -DMD5_ASM -DAES_ASM -DVPAES_ASM -DBSAES_ASM -DGHASH_ASM -DECP_NISTZ256_ASM -DX25519_ASM -DPADLOCK_ASM -DPOLY1305_ASM -DNDEBUG -Wdate-time -D_FORTIFY_SOURCE=2
+: OPENSSLDIR: "/usr/lib/ssl"
+: ENGINESDIR: "/usr/lib/x86_64-linux-gnu/engines-1.1"
+: Seeding source: os-specific
+
+- Many OpenSSL commands are designed to feed into one another, like
+  so:
+
+#+begin_src sh :results verbatim
+openssl s_client -showcerts -connect psibi.in:443 | openssl x509 -text -noout | head
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            03:cc:e7:17:ac:b2:12:26:04:a4:f2:c8:86:dc:02:89:c8:50
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C = US, O = Let's Encrypt, CN = R3
+        Validity
+            Not Before: Mar 24 03:59:18 2021 GMT
+            Not After : Jun 22 03:59:18 2021 GMT
+#+end_example
+
+- The *s_client* command servers as a TLS-aware netcat, negotiating a
+  TLS connection with the host and port you specify.
+- The *-showcerts* option displays the certificate information.
+- The *-connect* lets you choose the target.
+- We use the *x509* subcommand to say that we want human friendly
+  output with the *-text* option.
+- The *-noout* tells it skip showing the encoded certificate.
+- The above command grabs a website's TLS certificate and displays the
+  contents.
+
+You can learn more about them via man pages:
+
+#+begin_src sh :results verbatim
+man openssl-version | head -n 4
+#+end_src
+
+#+RESULTS:
+: VERSION(1SSL)                       OpenSSL                      VERSION(1SSL)
+:
+: NNAAMMEE
+:        openssl-version, version - print OpenSSL version information
+
+
+#+begin_src sh :results verbatim
+man openssl-x509 | head -n 4
+#+end_src
+
+#+RESULTS:
+: X509(1SSL)                          OpenSSL                         X509(1SSL)
+:
+: NNAAMMEE
+:        openssl-x509, x509 - Certificate display and signing utility
+
+* The United States and FIPS
+
+- Most organization in Canada and the United States must comply with
+  the US Federal Information Processing Standards (FIPS), a set of
+  cryptography requirements.
+- The current standard is FIPS 140-3. It's often called as "FIPS 140".
+
+* Applications and TLS
+
+- Every application server configures TLS differently.
+- This book focuses on the concepts so that you become competent to
+  configure your application server properly.
+
+* TLS versus DTLS
+
+- TLS expects the network to handle packet delivery, including coping
+  with any retransmissions and reording and so on. This means it runs
+  only on TCP.
+- Many UDP applications also need transport protection. Rather than
+  invent a whole new protocol, people took TLS and added a state
+  tracking system to handle all the netowrk accounting. This result is
+  the Datagram Transport Layer Security (DTLS) protocol.
