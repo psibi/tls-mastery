@@ -1,3 +1,31 @@
+* Table Of Contents
+  :PROPERTIES:
+  :TOC:      :include all
+  :END:
+:CONTENTS:
+- [[#table-of-contents][Table Of Contents]]
+- [[#tls-cryptography][TLS Cryptography]]
+- [[#hashes-and-cryptographic-hahes][Hashes and Cryptographic Hahes]]
+- [[#symmetric-encryption][Symmetric Encryption]]
+- [[#public-key-encryption][Public Key Encryption]]
+- [[#message-authentication-codes-mac][Message Authentication codes (MAC)]]
+- [[#digital-signatures][Digital Signatures]]
+- [[#key-lengths][Key Lengths]]
+- [[#cipher-suites][Cipher Suites]]
+  - [[#cipher-suite-names][Cipher Suite Names]]
+  - [[#alternate-cipher-names][Alternate Cipher Names]]
+  - [[#included-cipher-suites][Included Cipher Suites]]
+  - [[#cipher-lists-and-cipher-ordering][Cipher Lists and Cipher Ordering]]
+  - [[#when-high-isnt-enough][When HIGH isn't Enough]]
+- [[#trust-models-and-certificate-authorities][Trust Models and Certificate Authorities]]
+- [[#private-key-protection][Private Key Protection]]
+- [[#tls-resumption][TLS resumption]]
+- [[#tls-secure-renegotiation][TLS Secure Renegotiation]]
+- [[#perfect-forward-secrecy][Perfect Forward Secrecy]]
+- [[#server-name-indication][Server Name Indication]]
+:END:
+
+
 * TLS Cryptography
 
 Cryptgraphy has three goals:
@@ -228,3 +256,62 @@ openssl ciphers -v -s HIGH | head -n 3 | column -t
   putting the private key on a hardware security module (HSM).
 
 * TLS resumption
+
+- Resumption allows a TLS client to pick up where it left off. The
+  first time you click on a web site, the client and server perform
+  full TLS validation and negotiation. The second click, though, the
+  client resumes the previous TLS session and saves a round of network
+  requests and public key computations.
+- TLS 1.2 and earlier based resumption worked based on client side
+  *session tickets* and server-side *session caches*. This form of
+  resumption turned out to be easily broken and should not be used.
+- TLS 1.3 discarded the ealier resumption method in favor of a
+  pre-shared key (PSK) system.
+
+* TLS Secure Renegotiation
+
+- In TLS 1.2 and earlier, the server and client could change the terms
+  of the session through Secure Renegotiation. A web site might
+  require medium strength encryption for most of the site, but require
+  strong encryption on login pages. But it seems, that it was broken.
+- TLS 1.3 does not allow renegotiation of a TLS session; once everyone
+  agrees on the connection's terms, those terms remain unless you
+  create a new TLS session.
+
+* Perfect Forward Secrecy
+
+- When all of your data is encrypted with your private key, anyone who
+  has the key can capture and decrypt your data. This is a problem if
+  an intruder captures and saves your data in transit, then steals
+  your private key.
+- Many TLS 1.2 and earlier ciphers used the certificate's RSA key for
+  authentication in both key exchange and authentication.
+- The Diffie-Hellman Ephemeral Key Exchange (DHE) alogrithm let us
+  avoid using the certificate's key. Elliptic curve (ECDHE) versions
+  followed. These ciphers do not use the certificate's RSA key to
+  agree upon a symmetric key. A captured packet trace cannot be
+  decrypted in this case. This is called Perfect Forward Secrecy or
+  PFS.
+- Again, note that even TLS 1.3 [[https://ask.wireshark.org/question/9733/decrypt-tls-13-with-wireshark/][can be decrypted]] if you have the
+  master key.
+
+* Server Name Indication
+
+- One IP address can host many web sites.
+- When a client connects to a TLS-wrapped web site, the web server
+  needs to know which site the client is trying to connect to. The
+  HTTP 1.1 protocol gives the site name after the connection is
+  established.
+- How do you tell the web server which certificate to use to encrypt
+  the connection when the target site hasn't been identified yet ? The
+  answer is Server Name Indication or SNI. The client includes the
+  destination site in the initial TLS negotiation. The server uses the
+  hint from SNI to establish the connection, and then lets HTTP make
+  its separate request.
+- Servers that don't support SNI can support only one TLS site per IP
+  address.
+- Even in TLS 1.3, SNI is one of the few parts of the connection still
+  sent in cleartext. Eavesdroppers can tell which site you're
+  accessing.
+- People are working on an encrypted SNI, ESNI, but nothing is yet
+  finalized.

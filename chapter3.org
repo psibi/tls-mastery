@@ -1,0 +1,298 @@
+* Certificates
+
+- TLS is built on digital certificates. A digital certificate is a
+  collection of carefully formatted information that identifies an
+  entity, digitally signed by a Certificate Authority.
+- A *server certificate* is intended for an application server, and is
+  used to authoritatively identify the server. Most sysadmins focus on
+  server certificates.
+- A *client certificate* or *user certificate* identifies someone or
+  something that authenticates to a server. An internal mail server
+  might have a client certificate that authenticates it to its
+  public-facing outbound mail server-the internal mail server is a
+  client of the outbound server.
+- A *trust anchor* sometimes called a *root certificate* is ultimately
+  trusted to sign other certificates. Trust anchors might be globally
+  trusted public CAs.
+- *Issuing certificates* can sign other certificates.
+
+* Certificate Standards
+
+- TLS certificate information is organized as per X.509, the Internal
+  Telecommunications Union's (ITU) standard for digital certificates.
+- X.509 is built on Abstract Syntax Notation One (ASN.1), another ITU
+  standard.
+- ASN.1 is a method for defining cross platform data structures and
+  providing information in a globally recognized manner.
+
+* Trust Anchors
+
+- A *trust anchor* often called a *root certificate* is included on a
+  list of ultimately trusted certificates. Your system or application
+  has been told to trust them, so it does.
+- Every operating system or application platform provides a *trust
+  bundle*, a collection of self-signed certificates trusted to sign
+  other certificats. It might be also called as
+  - *trust anchor bundle*
+  - *root certificate bundle*
+  - *certificate bundle*
+  - *plan bundle*
+- Vendors like Microsoft, Google maintain their own bundles. The
+  Mozilla Foundation maintains the bundle used in Firefox, but most
+  versions of Unix also use the Mozilla bundle or a derivative
+  thereof.
+
+** Making your own Trust bundle
+
+- Many huge enterprise maintain their own trust bundle.
+
+** The OpenSSL Trust Bundle
+
+- OpenSSL must have a trust bundle to validate certificates.
+- Most OpenSSL install use the Mozilla trust bundle.
+- Most software expects to find certificates in */etc/ssl/certs*
+- You can find the OpenSSL directory via *openssl version -a* command.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+openssl version -a
+#+end_src
+
+#+RESULTS:
+: OpenSSL 1.1.1  11 Sep 2018
+: built on: Mon Mar 22 11:42:42 2021 UTC
+: platform: debian-amd64
+: options:  bn(64,64) rc4(16x,int) des(int) blowfish(ptr)
+: compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -Wa,--noexecstack -g -O2 -fdebug-prefix-map=/build/openssl-nwsL4a/openssl-1.1.1=. -fstack-protector-strong -Wformat -Werror=format-security -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_CPUID_OBJ -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DOPENSSL_BN_ASM_MONT5 -DOPENSSL_BN_ASM_GF2m -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DKECCAK1600_ASM -DRC4_ASM -DMD5_ASM -DAES_ASM -DVPAES_ASM -DBSAES_ASM -DGHASH_ASM -DECP_NISTZ256_ASM -DX25519_ASM -DPADLOCK_ASM -DPOLY1305_ASM -DNDEBUG -Wdate-time -D_FORTIFY_SOURCE=2
+: OPENSSLDIR: "/usr/lib/ssl"
+: ENGINESDIR: "/usr/lib/x86_64-linux-gnu/engines-1.1"
+: Seeding source: os-specific
+
+So it seems to be on */user/lib/ssl* path:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+ls /usr/lib/ssl
+#+end_src
+
+#+RESULTS:
+: certs
+: misc
+: openssl.cnf
+: private
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+ls /usr/lib/ssl/certs/ | head -n 3
+#+end_src
+
+#+RESULTS:
+: 02265526.0
+: 03179a64.0
+: 062cdee6.0
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+file /usr/lib/ssl/certs/02265526.0
+#+end_src
+
+#+RESULTS:
+: /usr/lib/ssl/certs/02265526.0: symbolic link to Entrust_Root_Certification_Authority_-_G2.pem
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+cat /usr/lib/ssl/certs/02265526.0
+#+end_src
+
+#+RESULTS:
+#+begin_example
+-----BEGIN CERTIFICATE-----
+MIIEPjCCAyagAwIBAgIESlOMKDANBgkqhkiG9w0BAQsFADCBvjELMAkGA1UEBhMC
+VVMxFjAUBgNVBAoTDUVudHJ1c3QsIEluYy4xKDAmBgNVBAsTH1NlZSB3d3cuZW50
+cnVzdC5uZXQvbGVnYWwtdGVybXMxOTA3BgNVBAsTMChjKSAyMDA5IEVudHJ1c3Qs
+IEluYy4gLSBmb3IgYXV0aG9yaXplZCB1c2Ugb25seTEyMDAGA1UEAxMpRW50cnVz
+dCBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IC0gRzIwHhcNMDkwNzA3MTcy
+NTU0WhcNMzAxMjA3MTc1NTU0WjCBvjELMAkGA1UEBhMCVVMxFjAUBgNVBAoTDUVu
+dHJ1c3QsIEluYy4xKDAmBgNVBAsTH1NlZSB3d3cuZW50cnVzdC5uZXQvbGVnYWwt
+dGVybXMxOTA3BgNVBAsTMChjKSAyMDA5IEVudHJ1c3QsIEluYy4gLSBmb3IgYXV0
+aG9yaXplZCB1c2Ugb25seTEyMDAGA1UEAxMpRW50cnVzdCBSb290IENlcnRpZmlj
+YXRpb24gQXV0aG9yaXR5IC0gRzIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+AoIBAQC6hLZy254Ma+KZ6TABp3bqMriVQRrJ2mFOWHLP/vaCeb9zYQYKpSfYs1/T
+RU4cctZOMvJyig/3gxnQaoCAAEUesMfnmr8SVycco2gvCoe9amsOXmXzHHfV1IWN
+cCG0szLni6LVhjkCsbjSR87kyUnEO6fe+1R9V77w6G7CebI6C1XiUJgWMhNcL3hW
+wcKUs/Ja5CeanyTXxuzQmyWC48zCxEXFjJd6BmsqEZ+pCm5IO2/b1BEZQvePB7/1
+U1+cPvQXLOZprE4yTGJ36rfo5bs0vBmLrpxR57d+tVOxMyLlbc9wPBr64ptntoP0
+jaWvYkxN4FisZDQSA/i2jZRjJKRxAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAP
+BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRqciZ60B7vfec7aVHUbI2fkBJmqzAN
+BgkqhkiG9w0BAQsFAAOCAQEAeZ8dlsa2eT8ijYfThwMEYGprmi5ZiXMRrEPR9RP/
+jTkrwPK9T3CMqS/qF8QLVJ7UG5aYMzyorWKiAHarWWluBh1+xLlEjZivEtRh2woZ
+Rkfz6/djwUAFQKXSt/S1mja/qYh2iARVBCuch38aNzx+LaUa2NSJXsq9rD1s2G2v
+1fN2D807iDginWyTmsQ9v4IbZT+mD12q/OWyFcq1rca8PdCE6OoGcrBNOTJ4vz4R
+nAuknZoh8/CbCzB428Hch0P+vGOaysXCHMnHjf87ElgI5rY97HosTvuDls4MPGmH
+VHOkc8KT/1EQrBVUAdj8BbGJoX90g5pJ19xOe4pIb4tF9g==
+-----END CERTIFICATE-----
+#+end_example
+
+- Each Unix has their own way to manage these certificates. Eg:
+  *certctl*, *add-trusted-cert* or *update-ca-certificates* or a
+  tangle of OpenSSL commands.
+- If you want to use a speficic CA certificate in an OpenSSL command,
+  you can use the *-CAfile* option.
+
+* Certificate Components
+
+- Certificate contains two primary pieces:
+  - Information about the entity being certified
+  - Digital signature of that information
+- The information about the entity being certified is created by the
+  entity requesting the certificate.
+- The certificate also includes a public key.
+- The organization information and the public key is gathered together
+  into an X.509 formatted file called a certificate signing request or
+  CSR.
+- You submit the certificate signing request to your Certificate
+  Authority.
+- The CA verifies the information in the certificate signing
+  request. Once the CA is satisfied of the request's legitimacy it
+  attaches any delegated permissions and digitally signs the whole
+  thing. That's the certificate.
+- Certificates have validaty dates. Latest browsers reject
+  certificates older than 398 days.
+- Using a certificate requires the certificate file returned from the
+  CA, plus the private key created when you made the certificate
+  signing request. The certificate is useless without both components.
+
+* Extensions and Constraints
+
+- While the certificate's X.509 format rigidly defines data fields, it
+  is also extensible. A certificate issuer can add their own rigidly
+  defined data fields to certificates.
+- Most of these extensions are used as constraints or policy
+  statements.
+- A constraint dictates how the certificate can be used. One common
+  constraint is a name constraint, where the certificate can sign
+  other certificates within a certain domain.
+- A policy most often appplies to aspects of the TLS connection. Most
+  policies are built with X.509 extensions.
+
+* Validation Levels
+
+- Certain environments might require server certificates with greater
+  level of trust than usual.
+- A domain validated (DV) certificate means that the CA verified that
+  the requesting entity owns and controls the domain the certificate
+  is for. All free ACME and most inexpensive certs are DV.
+- An organization validated (OV) ceretificate includes everything in a
+  DV certificate but also checks that the requesting organization
+  exists and is at the address claimed. Most commercial CAs offer OV
+  certificates.
+- An extended validated (EV) certificate digs into the entity
+  requesting the certificate. It verifies the organization's business
+  registration and jurisdiction.
+
+* Trust and Your Certificate
+
+- The whole point of a certificate is for an entity to prove its
+  identity. Historically, certificate were validated using a Chain of
+  Trust. Today, it's more like a Tree of Trust.
+
+** Chain of Trust
+
+todo: insert pic
+
+- Back in the day, a sysadmin issued a Certificate Signing Request
+  containing their organization and server information. A CSR was
+  basically a certificate without the digital signature. The sysadmin
+  sent the request to a CA, along with a wad of cash. The CA signed
+  the CSR creating a complete certificate and returned it to the
+  sysadmin, who installed the certificate file on their server.
+
+** Intermediate CAs
+
+- Root CAs operate under very strict requirements. Root CAs are busy
+  and that why intermediate CAs come in.
+- An intermediate CA has a certificate signed by a trusted CA, so
+  clients will trust it in turn. The intermediate CA certificate has
+  been delegated the privilege of signing further certificates.
+- You now have a Chain of Trust with multiple links, like a real
+  chain.
+- Clients visiting your web site validate your certificate by
+  evaulating the signature on your certificate and then the signature
+  on the certificate used to sign your cert, then the CA's
+  certificate. If eveything matched, your certificate is valid.
+- One complication with Chains of Trust is that the client only has
+  the trust anchor. It does not have the intermediate certificats, nor
+  any way of collecting them. Without these, validation fails. The
+  server must offer the client the *certificate chain*. A *chain file*
+  also called as a *CA bundle* includes any and all intermediate
+  certificates.
+
+** Tree of Trust
+
+todo: insert diagaram
+
+* Certificate Validation
+
+- Clients must validate server certificates.
+- Some applications require the client provide a certificate to the
+  server.
+- Upon making the TLS connection, the server presents its certificate
+  and any intermediate certificates to the client. The client inspects
+  those certificates, checking both the validity dates and the digital
+  signatures.
+
+* Encoding
+
+- While certificates all use the X.509 format, a system can encode and
+  store those certificates in many ways.
+- Various extensions present: .pem, .der, .crt and more.
+
+** Distinguished Encoding Rules (DER)
+
+- The Distinguished Encoding Rules (DER) is one of the oldest methods
+  of encoding X.509 certificates.
+- The file command indicates that it is "data". The only way to be
+  sure if a file is DER-encoded is vai this:
+
+#+begin_example
+openssl x509 -in file.der -inform der -text -noout
+#+end_example
+
+- *-in* option lets you specify a file to be read.
+- *-inform* option denotes incoming format.
+- *-text* flag tells OpenSSL to provide the output in human readable
+  text form.
+- *-noout* prevents display of the encoded certificate.
+
+** Privacy Enhanced Mail (PEM)
+
+- The IETF created a standard for sending encrypted email, Privacy
+  Enhanced Email (PEM) in 1993.
+- PEM is mostly base64-encoded DER, plus headers and footers to make
+  it more human friendly.
+- Files containing PEM-encoded items often end in *.pem* but you'll
+  also see *.crt* for files containing a certificate or *.key* for
+  public or private keys. The nice thing about PEM encoding is that
+  you can read the headers and see what's in it.
+- OpenSSL command to view PEM-encoded certificate:
+
+#+begin_example
+openssl x509 -in file.crt -noout -text
+#+end_example
+
+- OpenSSL defaults to PEM so there's no need to manually set *-inform*.
+
+** Converting Between Encodings
+
+- Re-encoding uses the *-in* option we used to view certificates. It
+  also needs *-out* to give a destination filename.
+- It also uses the *-inform* and *-outform* to tell OpenSSL how to
+  read DER files and what encodings to use.
+- Converting DER to PEM:
+
+#+begin_example
+openssl x509 -in www.der -inform der -outform pem -out www.pem
+#+end_example
+
+- Converting PEM to DER:
+
+#+begin_example
+openssl x509 -in www.crt -outform der -out www.der
+#+end_example
+
+* OpenSSL without input files

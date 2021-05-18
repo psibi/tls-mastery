@@ -1,0 +1,378 @@
+* Table of Contents
+  :PROPERTIES:
+  :TOC:      :include all
+  :END:
+:CONTENTS:
+- [[#table-of-contents][Table of Contents]]
+- [[#tls-connections][TLS Connections]]
+- [[#connecting-to-ports][Connecting to Ports]]
+  - [[#connecting-versus-debugging][Connecting versus Debugging]]
+  - [[#line-feeds-carriage-returns-and-newlines][Line Feeds, Carriage Returns, and Newlines]]
+  - [[#tls-dedicate-tcp-ports][TLS Dedicate TCP ports]]
+- [[#opportunistic-tls][Opportunistic TLS]]
+- [[#connection-commands][Connection commands]]
+  - [[#dtls][DTLS]]
+- [[#silencing-s_client][Silencing s_client]]
+- [[#specific-tls-versions][Specific TLS Versions]]
+- [[#choosing-ciphers][Choosing Ciphers]]
+:END:
+
+* TLS Connections
+
+- You can use a tool like netcat to send arbitrary traffic. TLS
+  complicates this process.
+- If I use netcat to connect to a TLS-wrapped port, I'll get binary
+  TLS in my text-only client. I need my client to handle TLS for me.
+- OpenSSL includes the *s_client* subcommand for creating and
+  debugging TLS-wrapped network connections.
+
+* Connecting to Ports
+
+- Clients connect to network ports via direct TLS connections, TLS
+  connections with CR/LF handling etc.
+
+** Connecting versus Debugging
+
+- The *s_client* command was written for debugging TLS connections.
+- When it discovers invalid certificats, it defaults to accepting them
+  and continuing on. If you're relying on OpenSSL to expose TLS
+  problems, add the *-verify_return_error* flag to all of your
+  s_client commands.
+
+** Line Feeds, Carriage Returns, and Newlines
+
+- The different way of handling newline across OS applies also to text
+  protocol.
+- Modern OpenSSL uses either the *-connect* or the *-crlf* options to
+  connect to network ports. The connect option treats ENTER as
+  carriage return with a line feed, while crlf trates ENTER as a
+  crarriage return.
+
+** TLS Dedicate TCP ports
+
+- HTTPS uses port 443
+- The *-connect* argument tells *s_client* to create a TLS client to
+  the given host and port.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+openssl s_client -verify_return_error -connect imap.gmail.com:995
+#+end_src
+
+#+RESULTS:
+#+begin_example
+CONNECTED(00000005)
+---
+Certificate chain
+ 0 s:C = US, ST = California, L = Mountain View, O = Google LLC, CN = imap.gmail.com
+   i:C = US, O = Google Trust Services, CN = GTS CA 1O1
+ 1 s:C = US, O = Google Trust Services, CN = GTS CA 1O1
+   i:OU = GlobalSign Root CA - R2, O = GlobalSign, CN = GlobalSign
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIExzCCA6+gAwIBAgIRAKFUNMJpX7GIAwAAAADL94YwDQYJKoZIhvcNAQELBQAw
+QjELMAkGA1UEBhMCVVMxHjAcBgNVBAoTFUdvb2dsZSBUcnVzdCBTZXJ2aWNlczET
+MBEGA1UEAxMKR1RTIENBIDFPMTAeFw0yMTA0MTMxMDE1NDhaFw0yMTA3MDYxMDE1
+NDdaMGgxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH
+Ew1Nb3VudGFpbiBWaWV3MRMwEQYDVQQKEwpHb29nbGUgTExDMRcwFQYDVQQDEw5p
+bWFwLmdtYWlsLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABCrjo7VLta1t
+KsZF8Hyl1rqTKM4Ne3h4Wda/46fvKKny/1IeuCTUCq3v6YegMKrsi6ebp53vIBy6
+YjwhgzFD1wGjggJbMIICVzAOBgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAwwCgYIKwYB
+BQUHAwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQUobyCo+CvmVEXaOAnZNn/YFHc
+d2MwHwYDVR0jBBgwFoAUmNH4bhDrz5vsYJ8YkBug630J/SswaAYIKwYBBQUHAQEE
+XDBaMCsGCCsGAQUFBzABhh9odHRwOi8vb2NzcC5wa2kuZ29vZy9ndHMxbzFjb3Jl
+MCsGCCsGAQUFBzAChh9odHRwOi8vcGtpLmdvb2cvZ3NyMi9HVFMxTzEuY3J0MBkG
+A1UdEQQSMBCCDmltYXAuZ21haWwuY29tMCEGA1UdIAQaMBgwCAYGZ4EMAQICMAwG
+CisGAQQB1nkCBQMwMwYDVR0fBCwwKjAooCagJIYiaHR0cDovL2NybC5wa2kuZ29v
+Zy9HVFMxTzFjb3JlLmNybDCCAQMGCisGAQQB1nkCBAIEgfQEgfEA7wB1APZclC/R
+dzAiFFQYCDCUVo7jTRMZM7/fDC8gC8xO8WTjAAABeMrx0zIAAAQDAEYwRAIgJ13I
+QTcxmY9l1gghXyZse27FJt3MzP8cjCIEpn2na7cCIDMxQlSd+iTCDBlWTezSLVIp
+AJtJ5WzBT1RrnEkvewCxAHYA7sCV7o1yZA+S48O5G8cSo2lqCXtLahoUOOZHssvt
+xfkAAAF4yvHTHQAABAMARzBFAiEAkKfZeUg8bfgo02a4UYccTDyTItt8PG8g2ZlG
+U+nQmFwCIHll0BphVtfhzO3et1BzbcjpnRfQ9GAv8GBu17LO9SFqMA0GCSqGSIb3
+DQEBCwUAA4IBAQCyEd2XbGvq/HXmh3qndH6U1RBPIi94lXaAREukVpJto9YhaqSJ
+j0e0Fv+f+WBhVb0W/XyNDOnJ5OmN7iMStnBlST43mL76SgA06vFCS3rZfcYHs6lJ
+pXklrce4cRXx3Qar/9abTknc19LbrbAaK5yraVVMWriPq5x/G7KpkehpFtt81EVL
+IXjMGJ/80VEnsVD/BfGeUcCnBwkDOuuPuRQZMWX55+9iBVuxru9d07//76jledXo
+bll8uW4hHCrGvvbiACLWmXV3Io1UgetgT/mGuArv3I4uClg1e3ZBupUT1JGKQHD+
+mx4Hc5w5PAkBgOVBlsIvqg8aw6UN+K3fAQKV
+-----END CERTIFICATE-----
+subject=C = US, ST = California, L = Mountain View, O = Google LLC, CN = imap.gmail.com
+
+issuer=C = US, O = Google Trust Services, CN = GTS CA 1O1
+
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: ECDSA
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 2639 bytes and written 396 bytes
+Verification: OK
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Server public key is 256 bit
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 0 (ok)
+---
+#+end_example
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+openssl s_client -verify_return_error -crlf psibi.in:443
+#+end_src
+
+#+RESULTS:
+#+begin_example
+CONNECTED(00000005)
+---
+Certificate chain
+ 0 s:CN = psibi.in
+   i:C = US, O = Let's Encrypt, CN = R3
+ 1 s:C = US, O = Let's Encrypt, CN = R3
+   i:O = Digital Signature Trust Co., CN = DST Root CA X3
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIFFTCCA/2gAwIBAgISA8znF6yyEiYEpPLIhtwCichQMA0GCSqGSIb3DQEBCwUA
+MDIxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQswCQYDVQQD
+EwJSMzAeFw0yMTAzMjQwMzU5MThaFw0yMTA2MjIwMzU5MThaMBMxETAPBgNVBAMT
+CHBzaWJpLmluMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq8cbDO3G
+AfjqqbPPCBdPost8NMRmEubv85gXecll7mZMH5qSfTPuB/ouFWL3tPMf1U8usWeo
+SUK/48yatzBGwmj1KKlkaW9MS2QkydztRp+kH8LvbzbQvGknuOLWGHBALLT17o/3
+DYxuA5LnXdY+vLvJWygQoFr2N/XhnhUjcm6OaQEJpIykydfbBQGQSEuQIIw4egpg
+dHkYJjCOYAsXuSSggN8/FADTCec0RzVjfFTSoJ3hV9HLE9M8MCSXjuo0AJ/MbAxq
+91S8XmDcRjHCCd7Zw+NjHo8cxZCQ6NqGvn3xwx8ahmmbC+CyDEcIyJJZK2Yv+qE4
+oS8QZfaX/RaHMwIDAQABo4ICQjCCAj4wDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQW
+MBQGCCsGAQUFBwMBBggrBgEFBQcDAjAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBRj
+ThWFVlqklALCFkKkpZeaOAJXlzAfBgNVHSMEGDAWgBQULrMXt1hWy65QCUDmH6+d
+ixTCxjBVBggrBgEFBQcBAQRJMEcwIQYIKwYBBQUHMAGGFWh0dHA6Ly9yMy5vLmxl
+bmNyLm9yZzAiBggrBgEFBQcwAoYWaHR0cDovL3IzLmkubGVuY3Iub3JnLzATBgNV
+HREEDDAKgghwc2liaS5pbjBMBgNVHSAERTBDMAgGBmeBDAECATA3BgsrBgEEAYLf
+EwEBATAoMCYGCCsGAQUFBwIBFhpodHRwOi8vY3BzLmxldHNlbmNyeXB0Lm9yZzCC
+AQMGCisGAQQB1nkCBAIEgfQEgfEA7wB2AJQgvB6O1Y1siHMfgosiLA3R2k1ebE+U
+PWHbTi9YTaLCAAABeGKZ73kAAAQDAEcwRQIgK4pyIs5W1slDNTtbW4ESfD7wO+Fm
+aCbIZymbkgE2tw4CIQCoematXQ9q8iirnRaP2u+eNfqUUbcyLHtXhAwCDws7TAB1
+AH0+8viP/4hVaCTCwMqeUol5K8UOeAl/LmqXaJl+IvDXAAABeGKZ77IAAAQDAEYw
+RAIgQz74OfRAICB93jLXFWQbqMBWzqGgKQZayjjk01uJqVsCICAkmHZoYICbEM9b
+MYDyUBUPQGSYf2VuEMy8Wy6N3n3VMA0GCSqGSIb3DQEBCwUAA4IBAQC2By0TLDlP
+eP+fXDvriETu39mIQuvj6qrRbiF7JFj5OJ7xU/UwNLhzWiOdw0wNKmfSbRXlozhX
+2Ye5jg9cKpgV8rukhru6/HFB7AnzbQb/8ffUQNgrhMmVtNnB0uZ+HntwfYFRhgOz
+/uaNYEAQp8XwKRAlLZnimeVcivCH/1WVezaqu3y8vUSFR5T9GANHftsOPJ2DGB+y
+BGZmh8EcOXeeXHE3j5c6C7Hx4Ob1sGAWCH+7MsVK4g0F9xrfs5AH9XFRGDs/jxpi
+20FFvqTr92lCtN093LHSAbtuwYVolju1WZ61VJHEw4OE+kD5JuQRczDVKK17n8R3
+F1pT75Xbrl/A
+-----END CERTIFICATE-----
+subject=CN = psibi.in
+
+issuer=C = US, O = Let's Encrypt, CN = R3
+
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 2999 bytes and written 390 bytes
+Verification: OK
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Server public key is 2048 bit
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 0 (ok)
+---
+---
+Post-Handshake New Session Ticket arrived:
+SSL-Session:
+    Protocol  : TLSv1.3
+    Cipher    : TLS_AES_256_GCM_SHA384
+    Session-ID: D0AFE5FD1716B28C1E5A013F8D4E8297F4CD15EFB1ED90C62773300A97FDCFFF
+    Session-ID-ctx:
+    Resumption PSK: 03FD832A422E93BA4638D7A9A09449F1F52A458A674517C8099796B6B8B2BF1A9C574E1FC8572DFA9A6B0FE97DA0671E
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    TLS session ticket lifetime hint: 604800 (seconds)
+    TLS session ticket:
+    0000 - 1a 41 7e 77 4f 4b fc fd-44 3e c0 84 8c 3f db 47   .A~wOK..D>...?.G
+    0010 - c5 87 89 37 9f 02 32 60-9c 34 56 9b a2 93 9a 25   ...7..2`.4V....%
+    0020 - 07 11 3c 09 56 9f 67 86-0e f4 4a 55 0a d5 96 73   ..<.V.g...JU...s
+    0030 - 2b af 73 ae a3 b7 9b eb-d0 3d a8 84 a3 a4 b9 00   +.s......=......
+    0040 - fa cc cd a4 41 fa b2 0d-79 f4 51 b5 ea 92 5d 73   ....A...y.Q...]s
+    0050 - bd 67 72 cc b8 7b 23 85-af 5c 6a 6f f6 e2 db 0f   .gr..{#..\jo....
+    0060 - 9d 4f a9 0e db 82 62 dc-3a cb 3e 63 49 50 37 68   .O....b.:.>cIP7h
+    0070 - a7 82 32 0b ef 95 51 f7-c4 9f 08 3b 7f b0 6f d1   ..2...Q....;..o.
+    0080 - ef df f4 35 4b 88 a3 9b-2c 48 a1 da f3 7b e3 d9   ...5K...,H...{..
+    0090 - ba 03 fa 6a b7 13 19 50-35 0c 01 76 11 06 8a 80   ...j...P5..v....
+
+    Start Time: 1621319476
+    Timeout   : 7200 (sec)
+    Verify return code: 0 (ok)
+    Extended master secret: no
+    Max Early Data: 0
+---
+read R BLOCK
+#+end_example
+
+Okay, what about www.psibi.in which seems to be throwing SSL certificate browser warning:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+openssl s_client -verify_return_error -crlf www.psibi.in:443
+#+end_src
+
+#+RESULTS:
+#+begin_example
+CONNECTED(00000005)
+---
+Certificate chain
+ 0 s:C = US, ST = California, L = San Francisco, O = "GitHub, Inc.", CN = www.github.com
+   i:C = US, O = DigiCert Inc, OU = www.digicert.com, CN = DigiCert SHA2 High Assurance Server CA
+ 1 s:C = US, O = DigiCert Inc, OU = www.digicert.com, CN = DigiCert SHA2 High Assurance Server CA
+   i:C = US, O = DigiCert Inc, OU = www.digicert.com, CN = DigiCert High Assurance EV Root CA
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIHMDCCBhigAwIBAgIQAkk+B/qeN1otu8YdlEMPzzANBgkqhkiG9w0BAQsFADBw
+MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3
+d3cuZGlnaWNlcnQuY29tMS8wLQYDVQQDEyZEaWdpQ2VydCBTSEEyIEhpZ2ggQXNz
+dXJhbmNlIFNlcnZlciBDQTAeFw0yMDA1MDYwMDAwMDBaFw0yMjA0MTQxMjAwMDBa
+MGoxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1T
+YW4gRnJhbmNpc2NvMRUwEwYDVQQKEwxHaXRIdWIsIEluYy4xFzAVBgNVBAMTDnd3
+dy5naXRodWIuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsj49
+6jJ99veEXO7WdxGQZ7idtCnDcjZqQeDiy6057SwXj9yDUVnqhwo/yII8+y6Jpk3g
+75LpPpYNjiOwYp/JkpWbpBAd1FWlvXJo/eZS+TwuIYb7JSc2H3NDDKt2VV5SSKQd
+XOkDNqq7BisOFp2/TYwCMZboLufwRR5fKxL0nTKIOCwpnH8k//UdWpvTgIixDGLY
+QCwHt0fYEo49jFeDaKD4WMBPq6Tx1iKWBhw3HVc/OyvI3yjRAx4Anf/DCSt9YTW6
+f/ND4O/fOowcfW5T7zii1Kw0yw+ulBrE/xe6taVhL+QR0MXNkQV2iHNN85swidwM
+tcdGI8g3fYL48bSRywIDAQABo4IDyjCCA8YwHwYDVR0jBBgwFoAUUWj/kK8CB3U8
+zNllZGKiErhZcjswHQYDVR0OBBYEFIygCmlH3IkysE3GEUViXxovlk46MHsGA1Ud
+EQR0MHKCDnd3dy5naXRodWIuY29tggwqLmdpdGh1Yi5jb22CCmdpdGh1Yi5jb22C
+CyouZ2l0aHViLmlvgglnaXRodWIuaW+CFyouZ2l0aHVidXNlcmNvbnRlbnQuY29t
+ghVnaXRodWJ1c2VyY29udGVudC5jb20wDgYDVR0PAQH/BAQDAgWgMB0GA1UdJQQW
+MBQGCCsGAQUFBwMBBggrBgEFBQcDAjB1BgNVHR8EbjBsMDSgMqAwhi5odHRwOi8v
+Y3JsMy5kaWdpY2VydC5jb20vc2hhMi1oYS1zZXJ2ZXItZzYuY3JsMDSgMqAwhi5o
+dHRwOi8vY3JsNC5kaWdpY2VydC5jb20vc2hhMi1oYS1zZXJ2ZXItZzYuY3JsMEwG
+A1UdIARFMEMwNwYJYIZIAYb9bAEBMCowKAYIKwYBBQUHAgEWHGh0dHBzOi8vd3d3
+LmRpZ2ljZXJ0LmNvbS9DUFMwCAYGZ4EMAQICMIGDBggrBgEFBQcBAQR3MHUwJAYI
+KwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmRpZ2ljZXJ0LmNvbTBNBggrBgEFBQcwAoZB
+aHR0cDovL2NhY2VydHMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0U0hBMkhpZ2hBc3N1
+cmFuY2VTZXJ2ZXJDQS5jcnQwDAYDVR0TAQH/BAIwADCCAX0GCisGAQQB1nkCBAIE
+ggFtBIIBaQFnAHYARqVV63X6kSAwtaKJafTzfREsQXS+/Um4havy/HD+bUcAAAFx
+6y8fFgAABAMARzBFAiEA59y6w9oaoAoM2fvFq6KofYWRh0xRm4VEEaMHBtsBYUgC
+IBZxJhjA7SGWUlo57YslG8u6clHngDNvoTNVw1HQtTr3AHUAIkVFB1lVJFaWP6Ev
+8fdthuAjJmOtwEt/XcaDXG7iDwIAAAFx6y8evwAABAMARjBEAiBmEjiioTbc1//h
+CInYIX6O8hph5oLRVGCTxrTBfSRT2wIgZz7x3ZNIKQkWPKOFaaW3AxcB0DzhFsD6
+gxhkbl1p0AgAdgBRo7D1/QF5nFZtuDd4jwykeswbJ8v3nohCmg3+1IsF5QAAAXHr
+Lx8JAAAEAwBHMEUCIBQ/6El+TCCtWuop7IderN0+byn5sDreTu+Xz3GiY8cLAiEA
+7S83HxFFdQhQqpjjbWbIVBA88Nn/riaf5Jb8h3oJV8cwDQYJKoZIhvcNAQELBQAD
+ggEBAADzu/I/4dMPwG4QzMFHZmgQFlnc/xqXtaNLqONIzXPznBQmHQi481xKgAR4
+jZOTTknlwOLBXnDXvV6rJQZXut3pxHSvVJk2kvuyDO3RC0uudd81AXIUsd6Pnjt2
+D6Xd/ypUAoMkyE+8euYESEFk4HlnrpXtN7OSTGVYZQk0aJrDINslXdmUL9E6AQiI
+YaRIpRMRdj4stG6CkPJpfSauWa19kReZ6hTQR5f89L6x50us7GuWlmH6EmVFIbhf
+9EO02QA3CcU7bE1iLWMHmKcU6ythmgsvNRU5TikxvF77JFv7n1/y8GLrprmKpB6Q
+Df4PA8S9ROX9Rzgwe3KTIM6qeKU=
+-----END CERTIFICATE-----
+subject=C = US, ST = California, L = San Francisco, O = "GitHub, Inc.", CN = www.github.com
+
+issuer=C = US, O = DigiCert Inc, OU = www.digicert.com, CN = DigiCert SHA2 High Assurance Server CA
+
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 3614 bytes and written 394 bytes
+Verification: OK
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Server public key is 2048 bit
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 0 (ok)
+---
+---
+Post-Handshake New Session Ticket arrived:
+SSL-Session:
+    Protocol  : TLSv1.3
+    Cipher    : TLS_AES_256_GCM_SHA384
+    Session-ID: 87284A47E6FC0F5F5B6E6E2355899DB495F8733091E82385F42A604DEBE60255
+    Session-ID-ctx:
+    Resumption PSK: AF22C9E15F2E1D2A5349F5AE1F4BAD033E1228F0224D90012DA96DC5C483A7175ADA53DFF3A789FA6236B765E3FD0ED7
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    TLS session ticket lifetime hint: 604800 (seconds)
+    TLS session ticket:
+    0000 - 1a 41 7e 77 4f 4b fc fd-44 3e c0 84 8c 3f db 47   .A~wOK..D>...?.G
+    0010 - ab 28 36 2f b4 0b e4 97-87 e7 d4 16 c8 f0 7e 36   .(6/..........~6
+    0020 - a7 8d 3d 7c 41 c7 47 73-21 cf 03 5e 63 1b 68 4a   ..=|A.Gs!..^c.hJ
+    0030 - b8 85 cc 86 2e af fa 2d-55 a9 bb 11 eb 44 25 99   .......-U....D%.
+    0040 - 5d 1c 61 e0 13 0f 91 53-73 86 ae cf f0 2e 65 eb   ].a....Ss.....e.
+    0050 - eb cb 63 99 14 b6 cb b5-47 5c 47 14 a8 7d 7e f8   ..c.....G\G..}~.
+    0060 - a2 ac f6 15 50 37 7b 95-a0 84 92 f4 06 9f a4 38   ....P7{........8
+    0070 - 40 ed e8 51 13 8c d8 86-96 93 f9 3b 12 bb b6 0b   @..Q.......;....
+    0080 - b4 b6 90 5e c3 eb fb 12-8a 5e cc 50 89 fe 95 23   ...^.....^.P...#
+    0090 - fc 8e 80 73 44 c6 0c 80-81 af f8 cb 32 e8 1a 02   ...sD.......2...
+
+    Start Time: 1621319547
+    Timeout   : 7200 (sec)
+    Verify return code: 0 (ok)
+    Extended master secret: no
+    Max Early Data: 0
+---
+read R BLOCK
+#+end_example
+
+* Opportunistic TLS
+
+- In some protocols, a client can request that a server use TLS and
+  servers can request clients upgrade to TLS.
+- This opportunistic TLS was ideal for universal protocols like email,
+  where everyone had a server and they couldn't all simultaneously
+  upgrade.
+- Opportunistic TLS is often called *STARTTLS*.
+- Openssl supports *-starttls* option.
+
+* Connection commands
+
+- The *s_client* session remains open until you terminate it.
+- Entering a *Q* cleanly closes the TLS connection.
+- Entering a *k* sends a TLS 1.3 key update.
+- Entering a *K* sends an update and requests one in return.
+
+** DTLS
+
+- You can use *s_server* subcommand from OpenSSL to interact with
+  DTLS.
+
+
+* Silencing s_client
+
+- *-quiet* flag to slience everything except a summary of the
+  certificate chain.
+
+#+begin_example
+openssl s_client -quiet -verify_return_error psibi.in:443
+#+end_example
+
+* Specific TLS Versions
+
+#+begin_example
+openssl s_client -brief -ssl3 -crlf www.psibi.in:443
+#+end_example
+
+* Choosing Ciphers
+
+- The *-cipher* option lets you specify TLS 1.2 options.
+- The *-ciphersuite* lets you specify TLS 1.3 ciphers.
