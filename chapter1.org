@@ -1,0 +1,230 @@
+* TLS Cryptography
+
+Cryptgraphy has three goals:
+
+- *Integrity* proves that the messages has not been modified, either
+  accidentally or deliberately.
+- *Confidentiality* makes the message unreadable by anyone except the
+  intended recipient.
+- *Non-repudiation* proves that the message came from the declared
+  sender; the sender cannot credibly declare that they didn't send the
+  message.
+
+* Hashes and Cryptographic Hahes
+
+- A hash or checksum is a computation that computes a fixed length
+  string from any chunk of data.
+- Hashes can be cryptographic or not. The difference is that a
+  cryptographic hash is irreversibe in practical terms.
+- A non-cryptographic hash is useful when you expect corruption rather
+  than deliberate tampering.
+
+* Symmetric Encryption
+
+- Symmetric algorithms use the same key to encrypt and decrypt text.
+
+* Public Key Encryption
+
+- Also called as asymmetric encryption.
+- Standard for the public key encryption is the Rivest, Shamir and
+  Adelman (RSA) algorithm.
+- The Elliptic Curve Digital Signature Algorithm (ECDSA) is a newer
+  method that works differently.
+- Public key Encryption encrypts. That's all it does.
+- You can generate two related keys, called a key pair. You can
+  encrypt a message with one pair, and only the other key of the pair
+  can decrypt it. This is the entire function of public key
+  encryption.
+- Public key crypytography usualy takes more computing power to
+  encrypt, decrypt and validate than symmetric algorithms.
+- TLS, and most other applications that leverage public key
+  cryptography combine two types of algorithms. We use public key
+  algorithm to authenticate everyone and agree on a symmetric
+  algorithm and exchange a random secret key for that algorithm.
+- Using public key cryptography is complicated. Public key
+  cryptography users must agree on a whole series of algorithms,
+  methods of distributing trust, and more. A collection of these is a
+  public key infrastructure (PKI).
+
+* Message Authentication codes (MAC)
+
+- Motivation: Hashes are great, but what if someone changes both the
+  original message as well as hash.
+- A MAC is a hash encrypted with a symmetric encryption key known only
+  to the sender and the recipient.
+- A HMAC or Hashed Message Authentication Code is a specific method of
+  using a particular cryptographic hash to create a MAC. Eg: HMAC-MD5
+- HMAC provides both integrity and authentication.
+
+* Digital Signatures
+
+- Software digitally signs a message by generating a HMAC of the
+  message, encrypting that hash with a private key and attaching the
+  encrypted file to the message.
+- Anyone with a public key can decrypt the HMAC, independently compute
+  the hash of the message, and compare the two.
+
+* Key Lengths
+
+- A key's length is the number of bits in the private key.
+- [[https://www.keylength.com/][Cryptography key length recommendations]]
+
+* Cipher Suites
+
+- In TLS terms, a *cipher suite* is a specific combination of a
+  particular symmetric, checksum, and public key algorithms, plus
+  other details needed so that each party can encrypt and decrypt
+  messages comprehensible to the other party. It's often referred to
+  as a cipher.
+
+** Cipher Suite Names
+
+- Each cipher suite has an official name defined by the Internet
+  Assigned Number Authority (IANA.)
+- Eg: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+- TLS 1.2 and 1.3 use different syntaxes for naming ciphers.
+- TLS 1.2 cipher names can include up to six pieces of information:
+  Protocol_Kx_Au_WITH_Enc_MAC
+  - The protocol is TLS
+  - Kx is the key exchange method one of ECDHE, DHE, ECDH, DH or RSA.
+  - Au is the authentication method, either ECDSA or RSA. If both key
+    exchange and authentication use the same method, such as RSA, it
+    only appears once.
+  - Enc gives the symmetric encryption plus the mode of operation, one
+    of CBC, CCM, CCM_8 or GCM.
+  - The MAC or Message Authentication code is one of SHA, SHA256 or
+    SHA384.
+- TLS 1.3 removed key exchange and authentication methods from the
+  cipher name. The cipher suite no longer dictates them. It also
+  dropped the WITH seprator. The names are much shorter:
+  Protocol_Enc_MAC
+  - The TLS 1.3 standard includes only five ciphers.
+  - No TLS 1.2 ciphers survived.
+
+** Alternate Cipher Names
+
+- Different software name some ciphers differently.
+- [[https://ciphersuite.info/][TLS Cipher Suite Search]]
+
+** Included Cipher Suites
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+openssl ciphers
+#+end_src
+
+#+RESULTS:
+: TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES128-SHA:RSA-PSK-AES256-GCM-SHA384:DHE-PSK-AES256-GCM-SHA384:RSA-PSK-CHACHA20-POLY1305:DHE-PSK-CHACHA20-POLY1305:ECDHE-PSK-CHACHA20-POLY1305:AES256-GCM-SHA384:PSK-AES256-GCM-SHA384:PSK-CHACHA20-POLY1305:RSA-PSK-AES128-GCM-SHA256:DHE-PSK-AES128-GCM-SHA256:AES128-GCM-SHA256:PSK-AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:ECDHE-PSK-AES256-CBC-SHA384:ECDHE-PSK-AES256-CBC-SHA:SRP-RSA-AES-256-CBC-SHA:SRP-AES-256-CBC-SHA:RSA-PSK-AES256-CBC-SHA384:DHE-PSK-AES256-CBC-SHA384:RSA-PSK-AES256-CBC-SHA:DHE-PSK-AES256-CBC-SHA:AES256-SHA:PSK-AES256-CBC-SHA384:PSK-AES256-CBC-SHA:ECDHE-PSK-AES128-CBC-SHA256:ECDHE-PSK-AES128-CBC-SHA:SRP-RSA-AES-128-CBC-SHA:SRP-AES-128-CBC-SHA:RSA-PSK-AES128-CBC-SHA256:DHE-PSK-AES128-CBC-SHA256:RSA-PSK-AES128-CBC-SHA:DHE-PSK-AES128-CBC-SHA:AES128-SHA:PSK-AES128-CBC-SHA256:PSK-AES128-CBC-SHA
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+openssl ciphers -v | head
+#+end_src
+
+#+RESULTS:
+#+begin_example
+TLS_AES_256_GCM_SHA384  TLSv1.3 Kx=any      Au=any  Enc=AESGCM(256) Mac=AEAD
+TLS_CHACHA20_POLY1305_SHA256 TLSv1.3 Kx=any      Au=any  Enc=CHACHA20/POLY1305(256) Mac=AEAD
+TLS_AES_128_GCM_SHA256  TLSv1.3 Kx=any      Au=any  Enc=AESGCM(128) Mac=AEAD
+ECDHE-ECDSA-AES256-GCM-SHA384 TLSv1.2 Kx=ECDH     Au=ECDSA Enc=AESGCM(256) Mac=AEAD
+ECDHE-RSA-AES256-GCM-SHA384 TLSv1.2 Kx=ECDH     Au=RSA  Enc=AESGCM(256) Mac=AEAD
+DHE-RSA-AES256-GCM-SHA384 TLSv1.2 Kx=DH       Au=RSA  Enc=AESGCM(256) Mac=AEAD
+ECDHE-ECDSA-CHACHA20-POLY1305 TLSv1.2 Kx=ECDH     Au=ECDSA Enc=CHACHA20/POLY1305(256) Mac=AEAD
+ECDHE-RSA-CHACHA20-POLY1305 TLSv1.2 Kx=ECDH     Au=RSA  Enc=CHACHA20/POLY1305(256) Mac=AEAD
+DHE-RSA-CHACHA20-POLY1305 TLSv1.2 Kx=DH       Au=RSA  Enc=CHACHA20/POLY1305(256) Mac=AEAD
+ECDHE-ECDSA-AES128-GCM-SHA256 TLSv1.2 Kx=ECDH     Au=ECDSA Enc=AESGCM(128) Mac=AEAD
+#+end_example
+
+To list only supported ciphers:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+openssl ciphers -v -s | head
+#+end_src
+
+#+RESULTS:
+#+begin_example
+TLS_AES_256_GCM_SHA384  TLSv1.3 Kx=any      Au=any  Enc=AESGCM(256) Mac=AEAD
+TLS_CHACHA20_POLY1305_SHA256 TLSv1.3 Kx=any      Au=any  Enc=CHACHA20/POLY1305(256) Mac=AEAD
+TLS_AES_128_GCM_SHA256  TLSv1.3 Kx=any      Au=any  Enc=AESGCM(128) Mac=AEAD
+ECDHE-ECDSA-AES256-GCM-SHA384 TLSv1.2 Kx=ECDH     Au=ECDSA Enc=AESGCM(256) Mac=AEAD
+ECDHE-RSA-AES256-GCM-SHA384 TLSv1.2 Kx=ECDH     Au=RSA  Enc=AESGCM(256) Mac=AEAD
+DHE-RSA-AES256-GCM-SHA384 TLSv1.2 Kx=DH       Au=RSA  Enc=AESGCM(256) Mac=AEAD
+ECDHE-ECDSA-CHACHA20-POLY1305 TLSv1.2 Kx=ECDH     Au=ECDSA Enc=CHACHA20/POLY1305(256) Mac=AEAD
+ECDHE-RSA-CHACHA20-POLY1305 TLSv1.2 Kx=ECDH     Au=RSA  Enc=CHACHA20/POLY1305(256) Mac=AEAD
+DHE-RSA-CHACHA20-POLY1305 TLSv1.2 Kx=DH       Au=RSA  Enc=CHACHA20/POLY1305(256) Mac=AEAD
+ECDHE-ECDSA-AES128-GCM-SHA256 TLSv1.2 Kx=ECDH     Au=ECDSA Enc=AESGCM(128) Mac=AEAD
+#+end_example
+
+The /-stdname/ option displays the standard name.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+openssl ciphers -v -stdname | head -n 2 | column -t
+#+end_src
+
+#+RESULTS:
+: TLS_AES_256_GCM_SHA384        -  TLS_AES_256_GCM_SHA384        TLSv1.3  Kx=any  Au=any  Enc=AESGCM(256)             Mac=AEAD
+: TLS_CHACHA20_POLY1305_SHA256  -  TLS_CHACHA20_POLY1305_SHA256  TLSv1.3  Kx=any  Au=any  Enc=CHACHA20/POLY1305(256)  Mac=AEAD
+
+** Cipher Lists and Cipher Ordering
+
+- OpenSSL supports cipher lists, letting you select exactly which
+  ciphers you will permit an application to use.
+- It includes a variety of built-in cipher lists with names like HIGH,
+  MEDIUM, RSA and so on.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+openssl ciphers -v -s HIGH | head -n 3 | column -t
+#+end_src
+
+#+RESULTS:
+: TLS_AES_256_GCM_SHA384        TLSv1.3  Kx=any  Au=any  Enc=AESGCM(256)             Mac=AEAD
+: TLS_CHACHA20_POLY1305_SHA256  TLSv1.3  Kx=any  Au=any  Enc=CHACHA20/POLY1305(256)  Mac=AEAD
+: TLS_AES_128_GCM_SHA256        TLSv1.3  Kx=any  Au=any  Enc=AESGCM(128)             Mac=AEAD
+
+- TLS protocol negotiation includes agreeing on a cipher. The client
+  declares every algorithm it supports. The server picks the one it
+  likes best.
+- If the server only supports algorithms it considers strong, it could
+  allow the client to pick the algorithm.
+
+** When HIGH isn't Enough
+
+- Mozilla provides configuration guides for most popular application
+  servers [[https://ssl-config.mozilla.org/][here]].
+
+* Trust Models and Certificate Authorities
+
+- The big problem of public key encryption is determining an
+  authoritative source of trustworthy public keys.
+- Two models:
+  - Web of Trust
+  - Certificate Authorities
+- Web of Trust was popularized by OpenPGP requires the user to make
+  the initial trust decisions and then assesses the world with
+  transitive trust. It boils down to "I chose to trust key A, and key
+  A trusts key B who trust C who trusts D, so I will trust D"
+- The Certificate Authority (CA) models escapes making the user do any
+  trust work by choosing to trust organizations that are considered
+  trustworthy.
+- The CA can sign certificates for the rest of us, and are subject to
+  audits to ensure they only sign valid certificate requests. They are
+  the root of the public PKI.
+- Problems of Web of Trust model:
+  - Confusing
+  - Difficult to use
+  - Easily gamed
+- Problems of CA
+  - Expensive (untill LetsEncrypt came)
+- The CA model became the standard in SSLv2 because of ease of use.
+
+* Private Key Protection
+
+- Anyone who can read the private key of a pair can use the keys
+  certificate to masquerade as the key wonder.
+- If the key is leaked, the entire certificate is compromised and can
+  no longer be trusted. You must revoke the certificate and generate a
+  new one.
+- You can protect a key with a passphrase but it has it's
+  disadvantage: Harder to deploy, reboot handling etc.
+- If your environment truly needs to protect its private key, consider
+  putting the private key on a hardware security module (HSM).
+
+* TLS resumption
