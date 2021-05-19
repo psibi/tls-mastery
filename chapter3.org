@@ -231,7 +231,7 @@ VHOkc8KT/1EQrBVUAdj8BbGJoX90g5pJ19xOe4pIb4tF9g==
   signatures leading to a trusted root, the client trust the
   certificate. Cross-signing creates something like things:
 
-[[file:tree-of-trust.png][Tree of Trust]]
+[[file:tree-of-trust.png]]
 
 - Advantages:
   - If an intermediate CA's certificate is revoked, the other CA
