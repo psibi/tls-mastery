@@ -193,7 +193,7 @@ VHOkc8KT/1EQrBVUAdj8BbGJoX90g5pJ19xOe4pIb4tF9g==
 
 ** Chain of Trust
 
-todo: insert pic
+[[file:single-chain.png]]
 
 - Back in the day, a sysadmin issued a Certificate Signing Request
   containing their organization and server information. A CSR was
@@ -203,6 +203,8 @@ todo: insert pic
   sysadmin, who installed the certificate file on their server.
 
 ** Intermediate CAs
+
+[[file:intermediate-ca.png]]
 
 - Root CAs operate under very strict requirements. Root CAs are busy
   and that why intermediate CAs come in.
@@ -224,7 +226,18 @@ todo: insert pic
 
 ** Tree of Trust
 
-todo: insert diagaram
+- Cross-signing permists certificates to carry more than one
+  signature. So long as the client can find one chain of valid
+  signatures leading to a trusted root, the client trust the
+  certificate. Cross-signing creates something like things:
+
+[[file:tree-of-trust.png][Tree of Trust]]
+
+- Advantages:
+  - If an intermediate CA's certificate is revoked, the other CA
+    provides valid links to a root CA.
+  - You could lose all but one trusted entitity on each level and
+    still validate the ceritifcate.
 
 * Certificate Validation
 
@@ -447,6 +460,284 @@ Certificate:
 
 ** Certificate Extensions
 
+#+begin_src sh :exports both :eval never-export :results verbatim
+openssl s_client -connect psibi.in:443 | openssl x509 -text -noout
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            03:cc:e7:17:ac:b2:12:26:04:a4:f2:c8:86:dc:02:89:c8:50
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C = US, O = Let's Encrypt, CN = R3
+        Validity
+            Not Before: Mar 24 03:59:18 2021 GMT
+            Not After : Jun 22 03:59:18 2021 GMT
+        Subject: CN = psibi.in
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                RSA Public-Key: (2048 bit)
+                Modulus:
+                    00:ab:c7:1b:0c:ed:c6:01:f8:ea:a9:b3:cf:08:17:
+                    4f:a2:cb:7c:34:c4:66:12:e6:ef:f3:98:17:79:c9:
+                    65:ee:66:4c:1f:9a:92:7d:33:ee:07:fa:2e:15:62:
+                    f7:b4:f3:1f:d5:4f:2e:b1:67:a8:49:42:bf:e3:cc:
+                    9a:b7:30:46:c2:68:f5:28:a9:64:69:6f:4c:4b:64:
+                    24:c9:dc:ed:46:9f:a4:1f:c2:ef:6f:36:d0:bc:69:
+                    27:b8:e2:d6:18:70:40:2c:b4:f5:ee:8f:f7:0d:8c:
+                    6e:03:92:e7:5d:d6:3e:bc:bb:c9:5b:28:10:a0:5a:
+                    f6:37:f5:e1:9e:15:23:72:6e:8e:69:01:09:a4:8c:
+                    a4:c9:d7:db:05:01:90:48:4b:90:20:8c:38:7a:0a:
+                    60:74:79:18:26:30:8e:60:0b:17:b9:24:a0:80:df:
+                    3f:14:00:d3:09:e7:34:47:35:63:7c:54:d2:a0:9d:
+                    e1:57:d1:cb:13:d3:3c:30:24:97:8e:ea:34:00:9f:
+                    cc:6c:0c:6a:f7:54:bc:5e:60:dc:46:31:c2:09:de:
+                    d9:c3:e3:63:1e:8f:1c:c5:90:90:e8:da:86:be:7d:
+                    f1:c3:1f:1a:86:69:9b:0b:e0:b2:0c:47:08:c8:92:
+                    59:2b:66:2f:fa:a1:38:a1:2f:10:65:f6:97:fd:16:
+                    87:33
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Digital Signature, Key Encipherment
+            X509v3 Extended Key Usage:
+                TLS Web Server Authentication, TLS Web Client Authentication
+            X509v3 Basic Constraints: critical
+                CA:FALSE
+            X509v3 Subject Key Identifier:
+                63:4E:15:85:56:5A:A4:94:02:C2:16:42:A4:A5:97:9A:38:02:57:97
+            X509v3 Authority Key Identifier:
+                keyid:14:2E:B3:17:B7:58:56:CB:AE:50:09:40:E6:1F:AF:9D:8B:14:C2:C6
+
+            Authority Information Access:
+                OCSP - URI:http://r3.o.lencr.org
+                CA Issuers - URI:http://r3.i.lencr.org/
+
+            X509v3 Subject Alternative Name:
+                DNS:psibi.in
+            X509v3 Certificate Policies:
+                Policy: 2.23.140.1.2.1
+                Policy: 1.3.6.1.4.1.44947.1.1.1
+                  CPS: http://cps.letsencrypt.org
+
+            CT Precertificate SCTs:
+                Signed Certificate Timestamp:
+                    Version   : v1 (0x0)
+                    Log ID    : 94:20:BC:1E:8E:D5:8D:6C:88:73:1F:82:8B:22:2C:0D:
+                                D1:DA:4D:5E:6C:4F:94:3D:61:DB:4E:2F:58:4D:A2:C2
+                    Timestamp : Mar 24 04:59:18.777 2021 GMT
+                    Extensions: none
+                    Signature : ecdsa-with-SHA256
+                                30:45:02:20:2B:8A:72:22:CE:56:D6:C9:43:35:3B:5B:
+                                5B:81:12:7C:3E:F0:3B:E1:66:68:26:C8:67:29:9B:92:
+                                01:36:B7:0E:02:21:00:A8:7A:66:AD:5D:0F:6A:F2:28:
+                                AB:9D:16:8F:DA:EF:9E:35:FA:94:51:B7:32:2C:7B:57:
+                                84:0C:02:0F:0B:3B:4C
+                Signed Certificate Timestamp:
+                    Version   : v1 (0x0)
+                    Log ID    : 7D:3E:F2:F8:8F:FF:88:55:68:24:C2:C0:CA:9E:52:89:
+                                79:2B:C5:0E:78:09:7F:2E:6A:97:68:99:7E:22:F0:D7
+                    Timestamp : Mar 24 04:59:18.834 2021 GMT
+                    Extensions: none
+                    Signature : ecdsa-with-SHA256
+                                30:44:02:20:43:3E:F8:39:F4:40:20:20:7D:DE:32:D7:
+                                15:64:1B:A8:C0:56:CE:A1:A0:29:06:5A:CA:38:E4:D3:
+                                5B:89:A9:5B:02:20:20:24:98:76:68:60:80:9B:10:CF:
+                                5B:31:80:F2:50:15:0F:40:64:98:7F:65:6E:10:CC:BC:
+                                5B:2E:8D:DE:7D:D5
+    Signature Algorithm: sha256WithRSAEncryption
+         b6:07:2d:13:2c:39:4f:78:ff:9f:5c:3b:eb:88:44:ee:df:d9:
+         88:42:eb:e3:ea:aa:d1:6e:21:7b:24:58:f9:38:9e:f1:53:f5:
+         30:34:b8:73:5a:23:9d:c3:4c:0d:2a:67:d2:6d:15:e5:a3:38:
+         57:d9:87:b9:8e:0f:5c:2a:98:15:f2:bb:a4:86:bb:ba:fc:71:
+         41:ec:09:f3:6d:06:ff:f1:f7:d4:40:d8:2b:84:c9:95:b4:d9:
+         c1:d2:e6:7e:1e:7b:70:7d:81:51:86:03:b3:fe:e6:8d:60:40:
+         10:a7:c5:f0:29:10:25:2d:99:e2:99:e5:5c:8a:f0:87:ff:55:
+         95:7b:36:aa:bb:7c:bc:bd:44:85:47:94:fd:18:03:47:7e:db:
+         0e:3c:9d:83:18:1f:b2:04:66:66:87:c1:1c:39:77:9e:5c:71:
+         37:8f:97:3a:0b:b1:f1:e0:e6:f5:b0:60:16:08:7f:bb:32:c5:
+         4a:e2:0d:05:f7:1a:df:b3:90:07:f5:71:51:18:3b:3f:8f:1a:
+         62:db:41:45:be:a4:eb:f7:69:42:b4:dd:3d:dc:b1:d2:01:bb:
+         6e:c1:85:68:96:3b:b5:59:9e:b5:54:91:c4:c3:83:84:fa:40:
+         f9:26:e4:11:73:30:d5:28:ad:7b:9f:c4:77:17:5a:53:ef:95:
+         db:ae:5f:c0
+#+end_example
+
+
 - The *x509v3 Key Usage extension* declares how this certificate can be used
   for low-level TLS and encryption options.
-- The *x509v3 Extended Key Usage* extension
+- The *x509v3 Extended Key Usage* extension gives a higher level view
+  of how the certificate can be used. This extension isn't usually
+  critical, so applicationss are free to ignore it if they wish.
+- The *x509v3 Basic Constraints* extension identifies if this
+  certificate is a Certificate Authority root certificate. If CA is
+  false, this certificate can't sign other certificates. If it's True,
+  it's a CA certificate. This extension is critical and must be obeyed.
+- The *x509v3 Key Identifier* are public keys.
+- The *x509v3 Authority Key Identifier* is the signer's public key.
+- The *Authority Information* extension declares how the CA offers
+  further information about this certificate.
+- The *x509v3 Subject Alternative Name* field lists all the valid host
+  names. A certificate can be valid for multiple hosts. This replaces
+  the Common Name.
+- The *x509v3 Certificate Policies* extension descirbes the CA's
+  organization, operation controls, and procedures. You can get more
+  information at the Certificate Practice Statement (CPS) site shown.
+- You can get a particular extension like this:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+echo "Q" | openssl s_client -connect psibi.in:443 | openssl x509 -noout -ext keyUsage
+#+end_src
+
+#+RESULTS:
+: X509v3 Key Usage: critical
+:     Digital Signature, Key Encipherment
+
+- You can get more help from x509v3_config. (man 5 x509v3_config)
+
+** Certificate Transperencey
+
+- Certificates are public information. You can look up all the
+  certificats issued for a domain.
+- The *Signed Certificate Timestamp* (SCT) provides cryptographic
+  proof that the certificate was submitted to a certificate log.
+- Eventually TLS clients will reject certificats ahat were not
+  submitted to a public log.
+
+** Digital Signature
+
+At the end of the certificate, you'll see the digital signature.
+
+** Skip Keys and Signatures
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+echo "Q" | openssl s_client -connect psibi.in:443 | openssl x509 -text -noout -certopt no_pubkey,no_sigdump
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            03:cc:e7:17:ac:b2:12:26:04:a4:f2:c8:86:dc:02:89:c8:50
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C = US, O = Let's Encrypt, CN = R3
+        Validity
+            Not Before: Mar 24 03:59:18 2021 GMT
+            Not After : Jun 22 03:59:18 2021 GMT
+        Subject: CN = psibi.in
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Digital Signature, Key Encipherment
+            X509v3 Extended Key Usage:
+                TLS Web Server Authentication, TLS Web Client Authentication
+            X509v3 Basic Constraints: critical
+                CA:FALSE
+            X509v3 Subject Key Identifier:
+                63:4E:15:85:56:5A:A4:94:02:C2:16:42:A4:A5:97:9A:38:02:57:97
+            X509v3 Authority Key Identifier:
+                keyid:14:2E:B3:17:B7:58:56:CB:AE:50:09:40:E6:1F:AF:9D:8B:14:C2:C6
+
+            Authority Information Access:
+                OCSP - URI:http://r3.o.lencr.org
+                CA Issuers - URI:http://r3.i.lencr.org/
+
+            X509v3 Subject Alternative Name:
+                DNS:psibi.in
+            X509v3 Certificate Policies:
+                Policy: 2.23.140.1.2.1
+                Policy: 1.3.6.1.4.1.44947.1.1.1
+                  CPS: http://cps.letsencrypt.org
+
+            CT Precertificate SCTs:
+                Signed Certificate Timestamp:
+                    Version   : v1 (0x0)
+                    Log ID    : 94:20:BC:1E:8E:D5:8D:6C:88:73:1F:82:8B:22:2C:0D:
+                                D1:DA:4D:5E:6C:4F:94:3D:61:DB:4E:2F:58:4D:A2:C2
+                    Timestamp : Mar 24 04:59:18.777 2021 GMT
+                    Extensions: none
+                    Signature : ecdsa-with-SHA256
+                                30:45:02:20:2B:8A:72:22:CE:56:D6:C9:43:35:3B:5B:
+                                5B:81:12:7C:3E:F0:3B:E1:66:68:26:C8:67:29:9B:92:
+                                01:36:B7:0E:02:21:00:A8:7A:66:AD:5D:0F:6A:F2:28:
+                                AB:9D:16:8F:DA:EF:9E:35:FA:94:51:B7:32:2C:7B:57:
+                                84:0C:02:0F:0B:3B:4C
+                Signed Certificate Timestamp:
+                    Version   : v1 (0x0)
+                    Log ID    : 7D:3E:F2:F8:8F:FF:88:55:68:24:C2:C0:CA:9E:52:89:
+                                79:2B:C5:0E:78:09:7F:2E:6A:97:68:99:7E:22:F0:D7
+                    Timestamp : Mar 24 04:59:18.834 2021 GMT
+                    Extensions: none
+                    Signature : ecdsa-with-SHA256
+                                30:44:02:20:43:3E:F8:39:F4:40:20:20:7D:DE:32:D7:
+                                15:64:1B:A8:C0:56:CE:A1:A0:29:06:5A:CA:38:E4:D3:
+                                5B:89:A9:5B:02:20:20:24:98:76:68:60:80:9B:10:CF:
+                                5B:31:80:F2:50:15:0F:40:64:98:7F:65:6E:10:CC:BC:
+                                5B:2E:8D:DE:7D:D5
+#+end_example
+
+- The *-certopt* flag allows you to skip certain fields.
+
+** Mutli-Name Certificates
+
+- If my site is at psibi.in, and if someone wants to go via
+  www.psibi.in - You would want that workflow to work.
+- A modern TLS certificate uses Subject Alternative Names or SANs to
+  identify all of the hostsnames the certificate is good for.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+echo "Q" | openssl s_client -connect psibi.in:443 | openssl x509 -noout -ext subjectAltName
+#+end_src
+
+#+RESULTS:
+: X509v3 Subject Alternative Name:
+:     DNS:psibi.in
+
+- It seems there is no certificate for me for www.psibi.in. I need to
+  get that fixed!
+
+** Wildcard certificates
+
+- I can also get a certificate like /*psibi.in/ as a Subject
+  Alternative Name.
+- Cons:
+  - If the private key is stolen, you are screwed.
+
+* Viewing Remote Certficates
+
+- You can see examples from above.
+- If you want to write the certificte to file, use the *-out* option.
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+echo "Q" | openssl s_client -connect psibi.in:443 | openssl x509 -out sibi.pem
+#+end_src
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+cat sibi.pem | head -n 3
+#+end_src
+
+#+RESULTS:
+: -----BEGIN CERTIFICATE-----
+: MIIFFTCCA/2gAwIBAgISA8znF6yyEiYEpPLIhtwCichQMA0GCSqGSIb3DQEBCwUA
+: MDIxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQswCQYDVQQD
+
+- To view all the certificates in the Chain of Trust, use the
+  *-showcerts* option of *s_client*. The x509 subcommand won't parse
+  all of these certificates simultaneously, so you'll need to save
+  this to a file and analyze them separately.
+- Dowloading chain file:
+
+#+begin_src sh :exports both :eval never-export :results verbatim
+openssl s_client -showcerts -connect psibi.in:443 > sibi.chain
+#+end_src
+
+- You would need to cut the certificates into separate PEM-encoded
+  files from sibi.chain in the above command.
+
+* Choosing a CA
+
+- You must use a CA included in the major trust bundles.
