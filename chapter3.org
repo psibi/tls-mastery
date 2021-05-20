@@ -1,3 +1,42 @@
+* Table Of Contents
+  :PROPERTIES:
+  :TOC:      :include all
+  :END:
+:CONTENTS:
+- [[#table-of-contents][Table Of Contents]]
+- [[#certificates][Certificates]]
+- [[#certificate-standards][Certificate Standards]]
+- [[#trust-anchors][Trust Anchors]]
+  - [[#making-your-own-trust-bundle][Making your own Trust bundle]]
+  - [[#the-openssl-trust-bundle][The OpenSSL Trust Bundle]]
+- [[#certificate-components][Certificate Components]]
+- [[#extensions-and-constraints][Extensions and Constraints]]
+- [[#validation-levels][Validation Levels]]
+- [[#trust-and-your-certificate][Trust and Your Certificate]]
+  - [[#chain-of-trust][Chain of Trust]]
+  - [[#intermediate-cas][Intermediate CAs]]
+  - [[#tree-of-trust][Tree of Trust]]
+- [[#certificate-validation][Certificate Validation]]
+- [[#encoding][Encoding]]
+  - [[#distinguished-encoding-rules-der][Distinguished Encoding Rules (DER)]]
+  - [[#privacy-enhanced-mail-pem][Privacy Enhanced Mail (PEM)]]
+  - [[#converting-between-encodings][Converting Between Encodings]]
+  - [[#openssl-without-input-files][OpenSSL without input files]]
+  - [[#pkcs-12][PKCS #12]]
+  - [[#creating-a-pkcs-12-file][Creating a PKCS #12 file]]
+  - [[#viewing-a-pkcs-12-file][Viewing a PKCS #12 File]]
+  - [[#exporting-from-pkcs-12-file][Exporting from PKCS #12 File]]
+- [[#certificate-contents][Certificate Contents]]
+  - [[#certificate-extensions][Certificate Extensions]]
+  - [[#certificate-transperencey][Certificate Transperencey]]
+  - [[#digital-signature][Digital Signature]]
+  - [[#skip-keys-and-signatures][Skip Keys and Signatures]]
+  - [[#mutli-name-certificates][Mutli-Name Certificates]]
+  - [[#wildcard-certificates][Wildcard certificates]]
+- [[#viewing-remote-certficates][Viewing Remote Certficates]]
+- [[#choosing-a-ca][Choosing a CA]]
+:END:
+
 * Certificates
 
 - TLS is built on digital certificates. A digital certificate is a
