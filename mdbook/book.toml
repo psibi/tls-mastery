@@ -1,0 +1,11 @@
+[book]
+title = "TLS Mastery"
+description = "Notes for TLS Mastery by Michael W Lucas"
+language = "en"
+src = "src"
+
+[build]
+build-dir = "book"
+
+[output.html]
+git-repository-url = "https://github.com/psibi/tls-mastery"

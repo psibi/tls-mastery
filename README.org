@@ -8,3 +8,14 @@ This contains my notes for the book *TLS Mastery* by Michael W Lucas.
 - [[file:chapter1.org][Chapter 1: TLS Cryptography]]
 - [[file:chapter2.org][Chapter 2: TLS Connections]]
 - [[file:chapter3.org][Chapter 3: Certificates]]
+
+** Building the book
+
+The org files are the source of truth. Generated Markdown
+(=mdbook/src/=) and HTML (=mdbook/book/=) are disposable and ignored by Git.
+
+#+begin_src sh
+just build   # convert and render the site
+just serve   # local preview with live reload
+just check   # build and verify the generated artifacts
+#+end_src
